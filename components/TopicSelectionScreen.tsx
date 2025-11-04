@@ -13,17 +13,17 @@ const TopicSelectionScreen: React.FC<TopicSelectionScreenProps> = ({ onTopicsSub
   const handleTopicToggle = (topic: string) => {
     setSelectedTopics(prev => {
       const isSelected = prev.includes(topic);
-      const isFinalExam = topic === TOPIC_NAMES.FINAL_EXAM;
+      const isSpecialTest = topic === TOPIC_NAMES.FINAL_EXAM || topic === TOPIC_NAMES.PERIODIC_CHECK;
 
       if (isSelected) {
         return prev.filter(t => t !== topic);
       } else {
-        if (isFinalExam) {
-          // If Final Exam is selected, it's the only selection
-          return [TOPIC_NAMES.FINAL_EXAM];
+        if (isSpecialTest) {
+          // If a special test (Final or Periodic) is selected, it's the only selection
+          return [topic];
         } else {
-          // If another topic is selected, remove Final Exam if it was selected
-          return [...prev.filter(t => t !== TOPIC_NAMES.FINAL_EXAM), topic];
+          // If another topic is selected, remove special tests if they were selected
+          return [...prev.filter(t => t !== TOPIC_NAMES.FINAL_EXAM && t !== TOPIC_NAMES.PERIODIC_CHECK), topic];
         }
       }
     });
@@ -47,18 +47,18 @@ const TopicSelectionScreen: React.FC<TopicSelectionScreenProps> = ({ onTopicsSub
       <div className="space-y-3 mb-8 max-h-[50vh] overflow-y-auto pr-2">
         {TOPIC_LIST.map((topic) => {
           const isSelected = selectedTopics.includes(topic);
-          const isFinalExam = topic === TOPIC_NAMES.FINAL_EXAM;
+          const isSpecialTest = topic === TOPIC_NAMES.FINAL_EXAM || topic === TOPIC_NAMES.PERIODIC_CHECK;
 
           const baseClasses = "w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ease-in-out flex items-center gap-4 cursor-pointer";
           const selectedClasses = "bg-red-100 border-red-500 ring-2 ring-red-500/50";
           const defaultClasses = "bg-slate-50 border-slate-200 hover:border-red-400 hover:bg-red-50";
-          const finalExamClasses = "border-red-700 bg-red-50 hover:bg-red-100 text-red-900 font-semibold";
+          const specialTestClasses = "border-red-700 bg-red-50 hover:bg-red-100 text-red-900 font-semibold";
           
           return (
             <div
               key={topic}
               onClick={() => handleTopicToggle(topic)}
-              className={`${baseClasses} ${isSelected ? selectedClasses : (isFinalExam ? finalExamClasses : defaultClasses)}`}
+              className={`${baseClasses} ${isSelected ? selectedClasses : (isSpecialTest ? specialTestClasses : defaultClasses)}`}
               role="checkbox"
               aria-checked={isSelected}
               tabIndex={0}
@@ -66,7 +66,7 @@ const TopicSelectionScreen: React.FC<TopicSelectionScreenProps> = ({ onTopicsSub
             >
               <div className={`w-6 h-6 rounded-md border-2 ${isSelected ? 'bg-red-600 border-red-600' : 'border-slate-400'} flex items-center justify-center transition-all flex-shrink-0`}>
                 {isSelected && (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg xmlns="http://www.w.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
@@ -82,7 +82,7 @@ const TopicSelectionScreen: React.FC<TopicSelectionScreenProps> = ({ onTopicsSub
           Начать тест
         </Button>
          <p className="text-sm text-slate-500 mt-3 text-center">
-          Итоговый тест содержит 60 вопросов по всем темам. Тесты по отдельным темам содержат 5 вопросов.
+          Итоговый тест содержит 60 вопросов по всем темам. Периодическая проверка - 20 случайных вопросов. Тесты по отдельным темам содержат 5 вопросов.
         </p>
       </div>
     </div>

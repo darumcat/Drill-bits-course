@@ -20,6 +20,7 @@ const shuffle = <T,>(array: T[]): T[] => {
 
 const TOPIC_QUIZ_LENGTH = 5;
 const FINAL_EXAM_LENGTH = 60;
+const PERIODIC_CHECK_LENGTH = 20;
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.START);
@@ -83,6 +84,9 @@ const App: React.FC = () => {
     if (topics.includes(TOPIC_NAMES.FINAL_EXAM)) {
       questionIndices = Array.from(Array(QUESTIONS.length).keys());
       quizLength = FINAL_EXAM_LENGTH;
+    } else if (topics.includes(TOPIC_NAMES.PERIODIC_CHECK)) {
+      questionIndices = Array.from(Array(QUESTIONS.length).keys());
+      quizLength = PERIODIC_CHECK_LENGTH;
     } else {
       const indicesSet = new Set<number>();
       topics.forEach(topic => {

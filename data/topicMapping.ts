@@ -14,6 +14,7 @@ export const TOPIC_NAMES = {
   JARS: 'Ясы',
   DLREAMER: 'DLReamer',
   FINAL_EXAM: 'Итоговый тест',
+  PERIODIC_CHECK: 'Периодическая проверка знаний',
 };
 
 const range = (start: number, end: number) => Array.from({ length: end - start + 1 }, (_, i) => start + i);
@@ -51,4 +52,5 @@ export const TOPIC_LIST = [
   TOPIC_NAMES.JARS,
   TOPIC_NAMES.DLREAMER,
   TOPIC_NAMES.FINAL_EXAM,
+  TOPIC_NAMES.PERIODIC_CHECK,
 ];
