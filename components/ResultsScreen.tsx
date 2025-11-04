@@ -94,7 +94,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         const textMetrics = ctx.measureText(watermarkText);
         const textWidth = textMetrics.width;
 
-        const xSpacing = textWidth + 50; 
+        const xSpacing = textWidth + 25; 
         const ySpacing = 30;
 
         const angle = -Math.PI / 6;
@@ -184,6 +184,27 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         });
         
         ctx.shadowColor = 'transparent';
+
+        // 4. Fine print footer
+        const baseString = `Результаты теста: правильно ${correctAnswers}, неправильно ${incorrectAnswers}. Темы: `;
+        let topicsString = results.selectedTopics?.join(', ') || 'Не выбраны';
+        let footerText = baseString + topicsString;
+
+        ctx.font = '12px Inter, sans-serif';
+        
+        let metrics = ctx.measureText(footerText);
+        const padding = 20;
+
+        while (metrics.width > width - padding && topicsString.length > 0) {
+            topicsString = topicsString.slice(0, -5) + '...'; // Cut 5 chars and add ellipsis
+            footerText = baseString + topicsString;
+            metrics = ctx.measureText(footerText);
+        }
+
+        ctx.fillStyle = '#6b7280';
+        ctx.textAlign = 'center';
+        ctx.fillText(footerText, width / 2, height - 15);
+
 
         canvas.toBlob(blob => {
           resolve(blob);
