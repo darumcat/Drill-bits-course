@@ -94,8 +94,8 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         const textMetrics = ctx.measureText(watermarkText);
         const textWidth = textMetrics.width;
 
-        const xSpacing = textWidth + 25; 
-        const ySpacing = 30;
+        const xSpacing = textWidth + 15; 
+        const ySpacing = 25;
 
         const angle = -Math.PI / 6;
         ctx.rotate(angle);
