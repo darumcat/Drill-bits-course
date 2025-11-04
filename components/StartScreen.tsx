@@ -18,7 +18,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, hasProgress }) => {
         Тестирование по курсу буровых долот
       </h1>
       <p className="text-lg text-slate-600 mb-10">
-        Проверьте свои знания в нашем интерактивном тесте. Вас ждет 20 вопросов.
+        Проверьте свои знания в нашем интерактивном тесте.
       </p>
       <Button onClick={onStart} className="w-full sm:w-auto text-lg">
         {hasProgress ? 'Продолжить тест' : 'Начать тест'}

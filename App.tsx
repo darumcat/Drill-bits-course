@@ -3,19 +3,23 @@ import StartScreen from './components/StartScreen';
 import QuizScreen from './components/QuizScreen';
 import ResultsScreen from './components/ResultsScreen';
 import NameInputScreen from './components/NameInputScreen';
+import TopicSelectionScreen from './components/TopicSelectionScreen';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { GameState, QuizData } from './types';
 import { QUESTIONS } from './data/questions';
+import { TOPIC_MAPPING, TOPIC_NAMES } from './data/topicMapping';
 
-const shuffle = (array: number[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
+const shuffle = <T,>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
   }
-  return array;
+  return newArray;
 };
 
-const QUIZ_LENGTH = 20;
+const TOPIC_QUIZ_LENGTH = 5;
+const FINAL_EXAM_LENGTH = 60;
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.START);
@@ -27,6 +31,7 @@ const App: React.FC = () => {
     userEmail: null,
     questionOrder: [],
     optionOrders: [],
+    selectedTopics: null,
   });
 
   // Handle backward compatibility for users with old saved data
@@ -38,23 +43,24 @@ const App: React.FC = () => {
         if (!newQuizData.questionOrder || newQuizData.questionOrder.length === 0) {
             console.log("Old data format detected, creating default question order.");
             // For old data, just create a default order, the new quiz logic will handle selection.
-            newQuizData.questionOrder = Array.from(Array(QUESTIONS.length).keys()).slice(0, QUIZ_LENGTH);
+            newQuizData.questionOrder = shuffle(Array.from(Array(QUESTIONS.length).keys())).slice(0, 20);
             updated = true;
         }
         if (!newQuizData.optionOrders || newQuizData.optionOrders.length === 0) {
             console.log("Old data format detected, creating default option orders.");
-            newQuizData.optionOrders = QUESTIONS.map(q => Array.from(Array(q.options.length).keys()));
+            newQuizData.optionOrders = QUESTIONS.map(q => shuffle(Array.from(Array(q.options.length).keys())));
             updated = true;
         }
         if (updated) {
             setQuizData(newQuizData);
         }
     }
-  }, [quizData, setQuizData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleStart = useCallback(() => {
-    const hasProgress = quizData.answers.some(a => a !== null) || quizData.time > 0;
-    if (hasProgress && quizData.questionOrder.length > 0) {
+    const hasProgress = (quizData.answers.some(a => a !== null) || quizData.time > 0) && quizData.questionOrder.length > 0;
+    if (hasProgress) {
       setGameState(GameState.QUIZ);
     } else {
       setGameState(GameState.NAME_INPUT);
@@ -62,9 +68,34 @@ const App: React.FC = () => {
   }, [quizData]);
   
   const handleNameSubmit = useCallback((name: string, email: string) => {
-    const questionIndices = Array.from(Array(QUESTIONS.length).keys());
+    setQuizData(prev => ({
+        ...prev,
+        userName: name,
+        userEmail: email,
+    }));
+    setGameState(GameState.TOPIC_SELECTION);
+  }, [setQuizData]);
+
+  const handleTopicsSubmit = useCallback((topics: string[]) => {
+    let questionIndices: number[];
+    let quizLength: number;
+
+    if (topics.includes(TOPIC_NAMES.FINAL_EXAM)) {
+      questionIndices = Array.from(Array(QUESTIONS.length).keys());
+      quizLength = FINAL_EXAM_LENGTH;
+    } else {
+      const indicesSet = new Set<number>();
+      topics.forEach(topic => {
+        const indicesForTopic = TOPIC_MAPPING[topic] || [];
+        indicesForTopic.forEach(index => indicesSet.add(index));
+      });
+      questionIndices = Array.from(indicesSet);
+      quizLength = Math.min(questionIndices.length, topics.length * TOPIC_QUIZ_LENGTH);
+    }
+
     const shuffledIndices = shuffle(questionIndices);
-    const selectedQuestionIndices = shuffledIndices.slice(0, QUIZ_LENGTH);
+    // Ensure we don't try to slice more questions than are available
+    const selectedQuestionIndices = shuffledIndices.slice(0, Math.min(quizLength, shuffledIndices.length));
 
     const optionOrders = QUESTIONS.map(q => shuffle(Array.from(Array(q.options.length).keys())));
     
@@ -72,13 +103,14 @@ const App: React.FC = () => {
       answers: Array(QUESTIONS.length).fill(null),
       time: 0,
       currentQuestionIndex: 0,
-      userName: name,
-      userEmail: email,
+      userName: quizData.userName,
+      userEmail: quizData.userEmail,
       questionOrder: selectedQuestionIndices,
       optionOrders: optionOrders,
+      selectedTopics: topics,
     });
     setGameState(GameState.QUIZ);
-  }, [setQuizData]);
+  }, [setQuizData, quizData.userName, quizData.userEmail]);
 
   const handleFinish = useCallback((finalTime: number) => {
     setQuizData(prev => ({ ...prev, time: finalTime }));
@@ -94,6 +126,7 @@ const App: React.FC = () => {
       userEmail: null,
       questionOrder: [],
       optionOrders: [],
+      selectedTopics: null,
     });
     setGameState(GameState.START);
   }, [setQuizData]);
@@ -106,6 +139,8 @@ const App: React.FC = () => {
         return <StartScreen onStart={handleStart} hasProgress={hasProgress} />;
       case GameState.NAME_INPUT:
         return <NameInputScreen onNameSubmit={handleNameSubmit} />;
+      case GameState.TOPIC_SELECTION:
+        return <TopicSelectionScreen onTopicsSubmit={handleTopicsSubmit} userName={quizData.userName} />;
       case GameState.QUIZ:
         return <QuizScreen onFinish={handleFinish} quizData={quizData} setQuizData={setQuizData} />;
       case GameState.RESULTS:

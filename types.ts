@@ -12,11 +12,13 @@ export interface QuizData {
   userEmail: string | null;
   questionOrder: number[];
   optionOrders: number[][];
+  selectedTopics: string[] | null;
 }
 
 export enum GameState {
   START = 'start',
   NAME_INPUT = 'name_input',
+  TOPIC_SELECTION = 'topic_selection',
   QUIZ = 'quiz',
   RESULTS = 'results',
 }

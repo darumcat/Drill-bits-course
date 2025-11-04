@@ -52,6 +52,29 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         canvas.width = width;
         canvas.height = height;
 
+        const wrapText = (context: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number => {
+            const words = text.split(', ');
+            let line = '';
+            let currentY = y;
+            context.textAlign = 'center';
+        
+            for (let n = 0; n < words.length; n++) {
+              const testLine = line + (line ? ', ' : '') + words[n];
+              const metrics = context.measureText(testLine);
+              const testWidth = metrics.width;
+              if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, currentY);
+                line = words[n];
+                currentY += lineHeight;
+              } else {
+                line = testLine;
+              }
+            }
+            context.fillText(line, x, currentY);
+            return currentY;
+        };
+
+
         // --- DRAWING ORDER ---
         // 1. Background
         const gradient = ctx.createLinearGradient(0, 0, width, height);
@@ -97,15 +120,32 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
 
         // Title
         ctx.fillStyle = '#B91C1C'; // red-700
-        ctx.font = 'bold 40px Inter, sans-serif';
+        ctx.font = 'bold 38px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Результаты теста', width / 2, 70);
+        ctx.fillText('Результаты теста', width / 2, 65);
         
         // User Info
-        ctx.font = '20px Inter, sans-serif';
+        ctx.font = '18px Inter, sans-serif';
         ctx.fillStyle = '#4b5563';
-        ctx.fillText(`Фамилия Имя Отчество: ${results.userName || 'Аноним'}`, width / 2, 110);
-        ctx.fillText(`E-mail: ${results.userEmail || 'Не указан'}`, width / 2, 140);
+        ctx.fillText(`Фамилия Имя Отчество: ${results.userName || 'Аноним'}`, width / 2, 105);
+        ctx.fillText(`E-mail: ${results.userEmail || 'Не указан'}`, width / 2, 130);
+
+        let currentY = 160;
+
+        // Topics
+        if (results.selectedTopics && results.selectedTopics.length > 0) {
+            ctx.font = 'bold 16px Inter, sans-serif';
+            ctx.fillStyle = '#4b5563';
+            ctx.fillText('Выбранные темы:', width / 2, currentY);
+            currentY += 24;
+
+            ctx.font = '15px Inter, sans-serif';
+            ctx.fillStyle = '#6b7280';
+            const topicsString = results.selectedTopics.join(', ');
+            const maxWidth = width - 120; // Padding
+            currentY = wrapText(ctx, topicsString, width / 2, currentY, maxWidth, 20) + 20;
+        }
+
 
         // Add completion date and time
         const completionDateTime = new Date().toLocaleString('ru-RU', {
@@ -115,9 +155,9 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
             hour: '2-digit',
             minute: '2-digit'
         });
-        ctx.font = '16px Inter, sans-serif';
+        ctx.font = '15px Inter, sans-serif';
         ctx.fillStyle = '#6b7280'; // gray-500
-        ctx.fillText(`Тест завершен: ${completionDateTime}`, width / 2, 170);
+        ctx.fillText(`Тест завершен: ${completionDateTime}`, width / 2, currentY);
 
 
         // Stats
@@ -128,14 +168,16 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
           { label: 'Время', value: formatTimeForCanvas(results.time), color: '#991B1B' },
         ];
         
+        const statsYStart = Math.max(currentY + 40, height - 260);
+
         stats.forEach((stat, index) => {
-          const yPos = 240 + index * 60;
-          ctx.font = '24px Inter, sans-serif';
+          const yPos = statsYStart + index * 55;
+          ctx.font = '22px Inter, sans-serif';
           ctx.fillStyle = '#374151';
           ctx.textAlign = 'left';
           ctx.fillText(stat.label, 180, yPos);
 
-          ctx.font = 'bold 30px Inter, sans-serif';
+          ctx.font = 'bold 28px Inter, sans-serif';
           ctx.fillStyle = stat.color;
           ctx.textAlign = 'right';
           ctx.fillText(stat.value.toString(), width - 180, yPos);

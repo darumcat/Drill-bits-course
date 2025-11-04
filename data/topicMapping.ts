@@ -1,0 +1,54 @@
+export const TOPIC_NAMES = {
+  INTRO: 'Введение в технологию буровых долот',
+  ROLLER_CONE: 'Особенности дизайна шарошечных долот',
+  PDC: 'Особенности дизайна PDC долот',
+  DRIVE_SYSTEMS: 'Системы привода',
+  DIRECTIONAL_DRILLING: 'Введение в наклоннонаправленное бурение',
+  VIBRATIONS: 'Вибрации в процессе бурения',
+  HYDRAULICS: 'Гидравлика',
+  DULL_GRADING_RULES: 'Правила оценки износа долот',
+  PDC_DULL_GRADING: 'Оценка износа PDC долот',
+  ROLLER_CONE_DULL_GRADING: 'Оценка износа шарошечных долот',
+  STUCK_PIPE: 'Прихват в процессе бурения',
+  OSCILLATOR: 'Осциллятор',
+  JARS: 'Ясы',
+  DLREAMER: 'DLReamer',
+  FINAL_EXAM: 'Итоговый тест',
+};
+
+const range = (start: number, end: number) => Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+export const TOPIC_MAPPING: Record<string, number[]> = {
+  [TOPIC_NAMES.INTRO]: range(0, 9),
+  [TOPIC_NAMES.PDC]: range(10, 39),
+  [TOPIC_NAMES.ROLLER_CONE]: range(40, 66),
+  [TOPIC_NAMES.PDC_DULL_GRADING]: range(67, 86),
+  [TOPIC_NAMES.ROLLER_CONE_DULL_GRADING]: range(87, 106),
+  [TOPIC_NAMES.DULL_GRADING_RULES]: range(107, 125),
+  [TOPIC_NAMES.VIBRATIONS]: range(126, 145),
+  [TOPIC_NAMES.DLREAMER]: range(146, 150),
+  [TOPIC_NAMES.HYDRAULICS]: range(151, 152),
+  [TOPIC_NAMES.STUCK_PIPE]: range(153, 157),
+  [TOPIC_NAMES.DIRECTIONAL_DRILLING]: range(158, 166),
+  [TOPIC_NAMES.DRIVE_SYSTEMS]: range(167, 176),
+  [TOPIC_NAMES.OSCILLATOR]: range(177, 181),
+  [TOPIC_NAMES.JARS]: range(182, 186),
+};
+
+export const TOPIC_LIST = [
+  TOPIC_NAMES.INTRO,
+  TOPIC_NAMES.ROLLER_CONE,
+  TOPIC_NAMES.PDC,
+  TOPIC_NAMES.DRIVE_SYSTEMS,
+  TOPIC_NAMES.DIRECTIONAL_DRILLING,
+  TOPIC_NAMES.VIBRATIONS,
+  TOPIC_NAMES.HYDRAULICS,
+  TOPIC_NAMES.DULL_GRADING_RULES,
+  TOPIC_NAMES.PDC_DULL_GRADING,
+  TOPIC_NAMES.ROLLER_CONE_DULL_GRADING,
+  TOPIC_NAMES.STUCK_PIPE,
+  TOPIC_NAMES.OSCILLATOR,
+  TOPIC_NAMES.JARS,
+  TOPIC_NAMES.DLREAMER,
+  TOPIC_NAMES.FINAL_EXAM,
+];
