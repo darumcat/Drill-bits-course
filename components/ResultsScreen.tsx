@@ -4,7 +4,7 @@ import { QUESTIONS } from '../data/questions';
 import Button from './Button';
 
 // !!! ВАЖНО: Замените эту строку на URL вашего веб-приложения из Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDxNPGEeKcRgcPMl7L3haE7neHgsqN-CFHsCA6z47999A5KCn-w7NaNaGYh0UXefWh/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJN-A986LdMSb4emcgsSi16K6Eh7aNFy9UU895t6GuaSYSC0OWEa_hB5fQG_u_JZ1a/exec';
 
 interface ResultsScreenProps {
   results: QuizData;
