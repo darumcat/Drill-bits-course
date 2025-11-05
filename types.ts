@@ -10,6 +10,7 @@ export interface QuizData {
   currentQuestionIndex: number;
   userName: string | null;
   userEmail: string | null;
+  userPassword?: string | null;
   questionOrder: number[];
   optionOrders: number[][];
   selectedTopics: string[] | null;

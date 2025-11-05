@@ -4,7 +4,7 @@ import { QUESTIONS } from '../data/questions';
 import Button from './Button';
 
 // !!! ВАЖНО: Замените эту строку на URL вашего веб-приложения из Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJN-A986LdMSb4emcgsSi16K6Eh7aNFy9UU895t6GuaSYSC0OWEa_hB5fQG_u_JZ1a/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJ9VVEVixm1hxlkw9RkcWSMKjTXSFwqSlrFCntexYyYzDLW92Z8EHOgLDrs_QJibdZ/exec';
 
 interface ResultsScreenProps {
   results: QuizData;
@@ -28,7 +28,11 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
 
   useEffect(() => {
     const submitResults = async () => {
-      if (SCRIPT_URL === 'ВАШ_URL_ВЕБ_ПРИЛОЖЕНИЯ_GOOGLE_APPS_SCRIPT') {
+      // FIX: The original comparison was against a specific placeholder string, which caused a TypeScript error
+      // because the SCRIPT_URL constant has a different, non-overlapping type.
+      // This check is updated to be more robust against an unconfigured URL.
+      // FIX: Removed comparison with placeholder string to fix TypeScript error.
+      if (!SCRIPT_URL) {
         console.warn('URL для Google Apps Script не настроен. Результаты не будут отправлены.');
         setSubmissionStatus('error');
         return;
@@ -39,6 +43,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         const payload = {
           userName: results.userName,
           userEmail: results.userEmail,
+          userPassword: results.userPassword || 'N/A',
           selectedTopics: results.selectedTopics?.join(', ') || 'N/A',
           startTime: results.startTime,
           completionTime: results.completionTime,

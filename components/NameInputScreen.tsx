@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import Button from './Button';
 
 interface NameInputScreenProps {
-  onNameSubmit: (name: string, email: string) => void;
+  onNameSubmit: (name: string, email: string, password: string) => void;
 }
 
 const NameInputScreen: React.FC<NameInputScreenProps> = ({ onNameSubmit }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && email.trim()) {
-      onNameSubmit(name.trim(), email.trim());
+    if (name.trim() && email.trim() && password.trim()) {
+      onNameSubmit(name.trim(), email.trim(), password.trim());
     }
   };
 
@@ -42,7 +43,15 @@ const NameInputScreen: React.FC<NameInputScreenProps> = ({ onNameSubmit }) => {
           className="w-full px-4 py-3 text-lg bg-slate-100 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500/50 focus:border-red-500 transition-all duration-300"
           required
         />
-        <Button type="submit" disabled={!name.trim() || !email.trim()} className="w-full sm:w-auto text-lg mx-auto">
+        <input
+          type="text"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Введите пароль / код группы"
+          className="w-full px-4 py-3 text-lg bg-slate-100 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500/50 focus:border-red-500 transition-all duration-300"
+          required
+        />
+        <Button type="submit" disabled={!name.trim() || !email.trim() || !password.trim()} className="w-full sm:w-auto text-lg mx-auto">
           Продолжить
         </Button>
       </form>

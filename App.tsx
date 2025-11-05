@@ -30,6 +30,7 @@ const App: React.FC = () => {
     currentQuestionIndex: 0,
     userName: null,
     userEmail: null,
+    userPassword: null,
     questionOrder: [],
     optionOrders: [],
     selectedTopics: null,
@@ -70,11 +71,12 @@ const App: React.FC = () => {
     }
   }, [quizData]);
   
-  const handleNameSubmit = useCallback((name: string, email: string) => {
+  const handleNameSubmit = useCallback((name: string, email: string, password: string) => {
     setQuizData(prev => ({
         ...prev,
         userName: name,
         userEmail: email,
+        userPassword: password,
     }));
     setGameState(GameState.TOPIC_SELECTION);
   }, [setQuizData]);
@@ -105,20 +107,19 @@ const App: React.FC = () => {
 
     const optionOrders = QUESTIONS.map(q => shuffle(Array.from(Array(q.options.length).keys())));
     
-    setQuizData({
+    setQuizData(prev => ({
+      ...prev,
       answers: Array(QUESTIONS.length).fill(null),
       time: 0,
       currentQuestionIndex: 0,
-      userName: quizData.userName,
-      userEmail: quizData.userEmail,
       questionOrder: selectedQuestionIndices,
       optionOrders: optionOrders,
       selectedTopics: topics,
       startTime: new Date().toISOString(),
       completionTime: null,
-    });
+    }));
     setGameState(GameState.QUIZ);
-  }, [setQuizData, quizData.userName, quizData.userEmail]);
+  }, [setQuizData]);
 
   const handleFinish = useCallback((finalTime: number) => {
     setQuizData(prev => ({ 
@@ -136,6 +137,7 @@ const App: React.FC = () => {
       currentQuestionIndex: 0,
       userName: null,
       userEmail: null,
+      userPassword: null,
       questionOrder: [],
       optionOrders: [],
       selectedTopics: null,
