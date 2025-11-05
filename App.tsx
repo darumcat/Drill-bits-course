@@ -8,7 +8,6 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { GameState, QuizData } from './types';
 import { QUESTIONS } from './data/questions';
 import { TOPIC_MAPPING, TOPIC_NAMES } from './data/topicMapping';
-import { useQuizResults } from './hooks/useQuizResults';
 
 const shuffle = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -23,12 +22,8 @@ const TOPIC_QUIZ_LENGTH = 5;
 const FINAL_EXAM_LENGTH = 60;
 const PERIODIC_CHECK_LENGTH = 20;
 
-// Тип для статуса сохранения
-type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
-
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.START);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [quizData, setQuizData] = useLocalStorage<QuizData>('drillBitQuiz', {
     answers: Array(QUESTIONS.length).fill(null),
     time: 0,
@@ -65,8 +60,6 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  const { sendQuizResults } = useQuizResults();
 
   const handleStart = useCallback(() => {
     const hasProgress = (quizData.answers.some(a => a !== null) || quizData.time > 0) && quizData.questionOrder.length > 0;
@@ -127,36 +120,14 @@ const App: React.FC = () => {
     setGameState(GameState.QUIZ);
   }, [setQuizData, quizData.userName, quizData.userEmail]);
 
-  const handleFinish = useCallback(async (finalTime: number) => {
-    const updatedData = { 
-      ...quizData, 
+  const handleFinish = useCallback((finalTime: number) => {
+    setQuizData(prev => ({ 
+      ...prev, 
       time: finalTime,
       completionTime: new Date().toISOString(),
-    };
-    
-    setQuizData(updatedData);
-    
-    // 🔥 АСИНХРОННАЯ ОТПРАВКА РЕЗУЛЬТАТОВ С ОБРАБОТКОЙ СТАТУСА
-    setSaveStatus('saving');
-    
-    try {
-      const success = await sendQuizResults(updatedData);
-      
-      if (success) {
-        setSaveStatus('success');
-        console.log('✅ Результаты успешно отправлены в Google Sheets');
-      } else {
-        setSaveStatus('error');
-        console.error('❌ Не удалось отправить результаты');
-      }
-    } catch (error) {
-      setSaveStatus('error');
-      console.error('❌ Ошибка при отправке результатов:', error);
-    }
-    
-    // Переходим к результатам независимо от статуса отправки
+    }));
     setGameState(GameState.RESULTS);
-  }, [quizData, setQuizData, sendQuizResults]);
+  }, [setQuizData]);
 
   const handleRestart = useCallback(() => {
     setQuizData({
@@ -172,21 +143,8 @@ const App: React.FC = () => {
       completionTime: null,
     });
     setGameState(GameState.START);
-    setSaveStatus('idle');
   }, [setQuizData]);
-
-  // Показываем статус сохранения во время перехода к результатам
-  useEffect(() => {
-    if (gameState === GameState.RESULTS && saveStatus === 'saving') {
-      // Можно добавить небольшую задержку для лучшего UX
-      const timer = setTimeout(() => {
-        setSaveStatus('success'); // Автоматически считаем успешным после задержки
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [gameState, saveStatus]);
-
+  
   const hasProgress = (quizData.answers.some(a => a !== null) || quizData.time > 0) && quizData.questionOrder.length > 0;
 
   const renderContent = () => {
@@ -198,22 +156,9 @@ const App: React.FC = () => {
       case GameState.TOPIC_SELECTION:
         return <TopicSelectionScreen onTopicsSubmit={handleTopicsSubmit} userName={quizData.userName} />;
       case GameState.QUIZ:
-        return (
-          <QuizScreen 
-            onFinish={handleFinish} 
-            quizData={quizData} 
-            setQuizData={setQuizData} 
-            isSaving={saveStatus === 'saving'}
-          />
-        );
+        return <QuizScreen onFinish={handleFinish} quizData={quizData} setQuizData={setQuizData} />;
       case GameState.RESULTS:
-        return (
-          <ResultsScreen 
-            results={quizData} 
-            onRestart={handleRestart} 
-            saveStatus={saveStatus}
-          />
-        );
+        return <ResultsScreen results={quizData} onRestart={handleRestart} />;
       default:
         return <StartScreen onStart={handleStart} hasProgress={hasProgress} />;
     }
@@ -223,19 +168,6 @@ const App: React.FC = () => {
     <div className="min-h-screen font-sans text-slate-800 flex items-center justify-center p-4 selection:bg-red-600 selection:text-white">
       <div className="w-full max-w-3xl mx-auto">
         {renderContent()}
-        
-        {/* Показываем статус сохранения поверх контента */}
-        {saveStatus === 'saving' && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-lg font-semibold">Сохранение результатов...</p>
-              <p className="text-sm text-gray-600 mt-2">
-                Если откроется новая вкладка - закройте её после отправки
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
