@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { QuizData } from '../types';
 import { QUESTIONS } from '../data/questions';
-import { SheetsResults, sendResultsToSheets, sendResultsViaForm } from '../services/sheetsService';
+import { SheetsResults, sendResultsToSheets } from '../services/sheetsService';
 
 export const useQuizResults = () => {
   const sendQuizResults = useCallback(async (quizData: QuizData): Promise<boolean> => {
@@ -43,31 +43,20 @@ export const useQuizResults = () => {
 
     console.log('📊 Подготовлены данные для отправки:', results);
 
-    // Пробуем отправить основным методом
+    // Отправляем данные через форму (основной метод)
     try {
-      const mainResult = await sendResultsToSheets(results);
+      const success = sendResultsToSheets(results);
       
-      if (mainResult.success) {
-        console.log('✅ Данные успешно отправлены основным методом');
+      if (success) {
+        console.log('✅ Данные успешно отправлены через форму');
         return true;
       } else {
-        // Если основной метод не сработал, используем форму
-        console.log('🔄 Основной метод не сработал, пробуем через форму...');
-        const formSuccess = sendResultsViaForm(results);
-        
-        if (formSuccess) {
-          console.log('✅ Данные отправлены через форму');
-          return true;
-        } else {
-          console.log('❌ Оба метода отправки не сработали');
-          return false;
-        }
+        console.log('❌ Не удалось отправить данные через форму');
+        return false;
       }
     } catch (error) {
       console.error('❌ Ошибка при отправке:', error);
-      // При ошибке тоже пробуем форму
-      const formSuccess = sendResultsViaForm(results);
-      return formSuccess;
+      return false;
     }
   }, []);
 

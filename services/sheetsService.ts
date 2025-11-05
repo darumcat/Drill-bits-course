@@ -11,7 +11,7 @@ export interface SheetsResults {
   score: number;
 }
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFm4LbSt1-3OJMWeBLaVUC5ccTD-h1ea4NHgZGs-UexKEVMxK4TaRDDBEQe8IP4tdx/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPWKrIqMLXhlVqwZsepSf36o5zfdQGpIB-Mjea5heAN-wshYkGOa8gb80Cx9Bw3Ev_/exec';
 
 // ОСНОВНОЙ метод - через форму (работает всегда)
 export const sendResultsToSheets = (results: SheetsResults): boolean => {
