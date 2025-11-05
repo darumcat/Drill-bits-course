@@ -12,7 +12,7 @@ export interface SheetsResults {
 }
 
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5FS71lFtxhrUVuexK-WahKA2ZGHuJtyqjCfDMdwL5ZMXiD9p_OuerdvUP4HolEsw/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPWKrIqMLXhlVqwZsepSf36o5zfdQGpIB-Mjea5heAN-wshYkGOa8gb80Cx9Bw3Ev_/exec';
 
 export const sendResultsToSheets = async (results: SheetsResults): Promise<boolean> => {
   try {
