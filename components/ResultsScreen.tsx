@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { QuizData } from '../types';
 import { QUESTIONS } from '../data/questions';
 import Button from './Button';
+
+// !!! ВАЖНО: Замените эту строку на URL вашего веб-приложения из Google Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDxNPGEeKcRgcPMl7L3haE7neHgsqN-CFHsCA6z47999A5KCn-w7NaNaGYh0UXefWh/exec';
 
 interface ResultsScreenProps {
   results: QuizData;
   onRestart: () => void;
 }
 
+type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error';
+
 const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => {
+  const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
+
   const correctAnswers = results.questionOrder.reduce((count, questionIndex) => {
     const answer = results.answers[questionIndex]; 
     const question = QUESTIONS[questionIndex];
@@ -18,6 +25,52 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
   const totalQuestions = results.questionOrder.length;
   const incorrectAnswers = totalQuestions - correctAnswers;
   const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+  useEffect(() => {
+    const submitResults = async () => {
+      if (SCRIPT_URL === 'ВАШ_URL_ВЕБ_ПРИЛОЖЕНИЯ_GOOGLE_APPS_SCRIPT') {
+        console.warn('URL для Google Apps Script не настроен. Результаты не будут отправлены.');
+        setSubmissionStatus('error');
+        return;
+      }
+
+      setSubmissionStatus('submitting');
+      try {
+        const payload = {
+          userName: results.userName,
+          userEmail: results.userEmail,
+          selectedTopics: results.selectedTopics?.join(', ') || 'N/A',
+          startTime: results.startTime,
+          completionTime: results.completionTime,
+          timeTaken: results.time,
+          correct: correctAnswers,
+          incorrect: incorrectAnswers,
+          total: totalQuestions,
+          score: scorePercentage,
+        };
+
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Важно для обхода CORS в простых запросах к Apps Script
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+        
+        // В режиме 'no-cors' мы не можем проверить статус ответа, поэтому просто предполагаем успех
+        console.log('Результаты отправлены в Google Sheets.');
+        setSubmissionStatus('success');
+
+      } catch (error) {
+        console.error('Ошибка при отправке результатов в Google Sheets:', error);
+        setSubmissionStatus('error');
+      }
+    };
+
+    submitResults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Пустой массив зависимостей, чтобы выполнилось один раз при монтировании
 
   const formatTime = (totalSeconds: number): string => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -236,6 +289,20 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
     link.click();
     URL.revokeObjectURL(link.href);
   };
+  
+  const getSubmissionMessage = () => {
+    switch (submissionStatus) {
+      case 'submitting':
+        return 'Сохранение результатов...';
+      case 'success':
+        return 'Результаты успешно сохранены.';
+      case 'error':
+        return 'Ошибка сохранения результатов.';
+      default:
+        return null;
+    }
+  };
+
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-2xl text-center animate-fade-in border border-gray-200">
@@ -269,12 +336,16 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
           <p className="text-sm text-slate-500">Время</p>
         </div>
       </div>
+      
+      <div className="min-h-[24px] mb-4 text-slate-500">
+        {getSubmissionMessage()}
+      </div>
 
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
-        <Button onClick={onRestart} variant="secondary" className="w-full sm:w-auto text-lg">
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+        <Button onClick={onRestart} variant="secondary" className="w-full sm:w-auto text-lg" disabled={submissionStatus === 'submitting'}>
           Пройти заново
         </Button>
-        <Button onClick={handleDownload} className="w-full sm:w-auto text-lg">
+        <Button onClick={handleDownload} className="w-full sm:w-auto text-lg" disabled={submissionStatus === 'submitting'}>
           Скачать
         </Button>
       </div>
