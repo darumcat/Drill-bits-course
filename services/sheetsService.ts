@@ -11,44 +11,10 @@ export interface SheetsResults {
   score: number;
 }
 
-// ОБНОВИТЕ ЭТОТ URL после переразвертывания скрипта
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPWKrIqMLXhlVqwZsepSf36o5zfdQGpIB-Mjea5heAN-wshYkGOa8gb80Cx9Bw3Ev_/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFm4LbSt1-3OJMWeBLaVUC5ccTD-h1ea4NHgZGs-UexKEVMxK4TaRDDBEQe8IP4tdx/exec';
 
-export const sendResultsToSheets = async (results: SheetsResults): Promise<{success: boolean; message?: string}> => {
-  try {
-    // Используем fetch с JSONP подходом через GET параметры
-    const params = new URLSearchParams();
-    params.append('data', JSON.stringify(results));
-    
-    const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'no-cors' // Важно: no-cors для обхода CORS
-    });
-    
-    console.log('✅ Данные отправлены в Google Sheets:', results.fullName);
-    return { success: true, message: 'Данные отправлены' };
-    
-  } catch (error) {
-    console.error('❌ Ошибка отправки в Google Sheets:', error);
-    
-    // Fallback: открываем в новой вкладке
-    try {
-      const params = new URLSearchParams();
-      params.append('data', JSON.stringify(results));
-      const fallbackUrl = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
-      
-      window.open(fallbackUrl, '_blank');
-      return { success: true, message: 'Данные отправлены через fallback' };
-    } catch (fallbackError) {
-      return { success: false, message: 'Не удалось отправить данные' };
-    }
-  }
-};
-
-// Альтернативная функция с использованием формы (надежный способ)
-export const sendResultsViaForm = (results: SheetsResults): boolean => {
+// ОСНОВНОЙ метод - через форму (работает всегда)
+export const sendResultsToSheets = (results: SheetsResults): boolean => {
   try {
     const form = document.createElement('form');
     form.method = 'POST';
@@ -74,6 +40,26 @@ export const sendResultsViaForm = (results: SheetsResults): boolean => {
     
   } catch (error) {
     console.error('❌ Ошибка отправки через форму:', error);
+    return false;
+  }
+};
+
+// Альтернативный метод через GET (для тестирования)
+export const sendResultsViaGet = (results: SheetsResults): boolean => {
+  try {
+    const params = new URLSearchParams();
+    params.append('data', JSON.stringify(results));
+    
+    const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+    
+    // Открываем в новой вкладке
+    window.open(url, '_blank');
+    
+    console.log('✅ Данные отправлены через GET:', results.fullName);
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Ошибка отправки через GET:', error);
     return false;
   }
 };
