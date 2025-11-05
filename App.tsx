@@ -8,6 +8,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { GameState, QuizData } from './types';
 import { QUESTIONS } from './data/questions';
 import { TOPIC_MAPPING, TOPIC_NAMES } from './data/topicMapping';
+import { useQuizResults } from './hooks/useQuizResults';
 
 const shuffle = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -37,6 +38,8 @@ const App: React.FC = () => {
     completionTime: null,
   });
 
+    
+
   // Handle backward compatibility for users with old saved data
   useEffect(() => {
     const hasProgress = quizData.answers.some(a => a !== null) || quizData.time > 0;
@@ -60,6 +63,8 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const { sendQuizResults } = useQuizResults();
+
 
   const handleStart = useCallback(() => {
     const hasProgress = (quizData.answers.some(a => a !== null) || quizData.time > 0) && quizData.questionOrder.length > 0;
@@ -120,14 +125,20 @@ const App: React.FC = () => {
     setGameState(GameState.QUIZ);
   }, [setQuizData, quizData.userName, quizData.userEmail]);
 
-  const handleFinish = useCallback((finalTime: number) => {
-    setQuizData(prev => ({ 
-      ...prev, 
+    const handleFinish = useCallback((finalTime: number) => {
+    const updatedData = { 
+      ...quizData, 
       time: finalTime,
       completionTime: new Date().toISOString(),
-    }));
+    };
+    
+    setQuizData(updatedData);
+    
+    // 🔥 ОТПРАВЛЯЕМ РЕЗУЛЬТАТЫ В GOOGLE SHEETS
+    sendQuizResults(updatedData);
+    
     setGameState(GameState.RESULTS);
-  }, [setQuizData]);
+  }, [quizData, setQuizData, sendQuizResults]);
 
   const handleRestart = useCallback(() => {
     setQuizData({
