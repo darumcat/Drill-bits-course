@@ -13,6 +13,8 @@ export interface QuizData {
   questionOrder: number[];
   optionOrders: number[][];
   selectedTopics: string[] | null;
+  startTime?: string | null;
+  completionTime?: string | null;
 }
 
 export enum GameState {

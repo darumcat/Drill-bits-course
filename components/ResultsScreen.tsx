@@ -56,7 +56,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
             const words = text.split(', ');
             let line = '';
             let currentY = y;
-            context.textAlign = 'center';
+            context.textAlign = 'left';
         
             for (let n = 0; n < words.length; n++) {
               const testLine = line + (line ? ', ' : '') + words[n];
@@ -136,19 +136,26 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         if (results.selectedTopics && results.selectedTopics.length > 0) {
             ctx.font = 'bold 16px Inter, sans-serif';
             ctx.fillStyle = '#4b5563';
-            ctx.fillText('Выбранные темы:', width / 2, currentY);
+            ctx.textAlign = 'left';
+            ctx.fillText('Выбранные темы:', 60, currentY);
             currentY += 24;
 
-            ctx.font = '15px Inter, sans-serif';
+            ctx.font = '14px Inter, sans-serif';
             ctx.fillStyle = '#6b7280';
             const topicsString = results.selectedTopics.join(', ');
             const maxWidth = width - 120; // Padding
-            currentY = wrapText(ctx, topicsString, width / 2, currentY, maxWidth, 20) + 20;
+            currentY = wrapText(ctx, topicsString, 60, currentY, maxWidth, 20) + 20;
         }
 
 
         // Add completion date and time
-        const completionDateTime = new Date().toLocaleString('ru-RU', {
+        const completionDateTime = results.completionTime ? new Date(results.completionTime).toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : new Date().toLocaleString('ru-RU', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
@@ -157,6 +164,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         });
         ctx.font = '15px Inter, sans-serif';
         ctx.fillStyle = '#6b7280'; // gray-500
+        ctx.textAlign = 'center';
         ctx.fillText(`Тест завершен: ${completionDateTime}`, width / 2, currentY);
 
 
@@ -186,21 +194,23 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ results, onRestart }) => 
         ctx.shadowColor = 'transparent';
 
         // 4. Fine print footer
-        const baseString = `Результаты теста: правильно ${correctAnswers}, неправильно ${incorrectAnswers}. Темы: `;
-        let topicsString = results.selectedTopics?.join(', ') || 'Не выбраны';
-        let footerText = baseString + topicsString;
+        const formatTimeForFooter = (isoString?: string | null) => {
+            if (!isoString) return 'н/д';
+            return new Date(isoString).toLocaleString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        };
+        
+        const startTimeStr = formatTimeForFooter(results.startTime);
+        const completionTimeStr = formatTimeForFooter(results.completionTime);
+        const footerText = `Результаты теста: правильно ${correctAnswers}, неправильно ${incorrectAnswers}. Начало: ${startTimeStr}. Окончание: ${completionTimeStr}.`;
 
         ctx.font = '12px Inter, sans-serif';
-        
-        let metrics = ctx.measureText(footerText);
-        const padding = 20;
-
-        while (metrics.width > width - padding && topicsString.length > 0) {
-            topicsString = topicsString.slice(0, -5) + '...'; // Cut 5 chars and add ellipsis
-            footerText = baseString + topicsString;
-            metrics = ctx.measureText(footerText);
-        }
-
         ctx.fillStyle = '#6b7280';
         ctx.textAlign = 'center';
         ctx.fillText(footerText, width / 2, height - 15);

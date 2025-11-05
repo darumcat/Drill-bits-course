@@ -33,6 +33,8 @@ const App: React.FC = () => {
     questionOrder: [],
     optionOrders: [],
     selectedTopics: null,
+    startTime: null,
+    completionTime: null,
   });
 
   // Handle backward compatibility for users with old saved data
@@ -112,12 +114,18 @@ const App: React.FC = () => {
       questionOrder: selectedQuestionIndices,
       optionOrders: optionOrders,
       selectedTopics: topics,
+      startTime: new Date().toISOString(),
+      completionTime: null,
     });
     setGameState(GameState.QUIZ);
   }, [setQuizData, quizData.userName, quizData.userEmail]);
 
   const handleFinish = useCallback((finalTime: number) => {
-    setQuizData(prev => ({ ...prev, time: finalTime }));
+    setQuizData(prev => ({ 
+      ...prev, 
+      time: finalTime,
+      completionTime: new Date().toISOString(),
+    }));
     setGameState(GameState.RESULTS);
   }, [setQuizData]);
 
@@ -131,6 +139,8 @@ const App: React.FC = () => {
       questionOrder: [],
       optionOrders: [],
       selectedTopics: null,
+      startTime: null,
+      completionTime: null,
     });
     setGameState(GameState.START);
   }, [setQuizData]);
